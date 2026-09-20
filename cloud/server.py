@@ -111,6 +111,25 @@ class CloudBot(discord.Client):
 
     async def setup_hook(self):
         self.loop.create_task(self.poll_loop())
+        # HTTP pour Render Web Service (sinon In progress forever)
+        self.loop.create_task(self.start_web())
+
+    async def start_web(self):
+        import os
+        try:
+            from aiohttp import web
+            async def health(req): return web.Response(text="DeezerRP Cloud OK - bot actif")
+            app = web.Application()
+            app.router.add_get("/", health)
+            app.router.add_get("/health", health)
+            runner = web.AppRunner(app)
+            await runner.setup()
+            port = int(os.getenv("PORT", "10000"))
+            site = web.TCPSite(runner, "0.0.0.0", port)
+            await site.start()
+            print(f"🌐 HTTP OK sur :{port} (Render health check)")
+        except Exception as e:
+            print(f"web fail {e}")
 
     async def on_ready(self):
         print(f"✓ Connecté Discord : {self.user} ({self.user.id})")
