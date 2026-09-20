@@ -224,6 +224,22 @@ class CloudBot(discord.Client):
         await asyncio.sleep(sec)
 
 def main():
+    # HTTP pour Render (doit répondre vite sinon No open ports)
+    import os, threading, http.server, socketserver
+    def _health():
+        port = int(os.getenv("PORT", "10000"))
+        class H(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200); self.end_headers(); self.wfile.write(b"DeezerRP Cloud OK")
+            def log_message(self, *a): pass
+        try:
+            with socketserver.TCPServer(("0.0.0.0", port), H) as httpd:
+                print(f"🌐 HTTP OK sur :{port} (Render health check)")
+                httpd.serve_forever()
+        except Exception as e:
+            print(f"health fail {e}")
+    threading.Thread(target=_health, daemon=True).start()
+
     cfg = load_cfg()
     token = cfg.get("discord_bot_token", "").strip() or cfg.get("discord_token", "").strip()
     if not token:
