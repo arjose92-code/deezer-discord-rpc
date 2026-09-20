@@ -1,0 +1,7 @@
+pypresence>=4.6
+pillow>=10.0
+psutil>=5.9
+pystray>=0.19
+plyer>=2.1
+# customtkinter déjà installé (optionnel mais recommandé pour le thème)
+# customtkinter>=5.2

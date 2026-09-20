@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Config perso (ne pas commit ton Client ID)
+# config.json est gardé en exemple, ta config locale sera ignorée si tu veux
+# config.json
+
+# Env
+venv/
+.venv/
+.env
+
+# OS
+Thumbs.db
+.DS_Store
+*.log
+
+# Temp PowerShell
+*.ps1.tmp
+deezerrp_media.ps1
+
+# PyInstaller
+*.spec
+*.manifest

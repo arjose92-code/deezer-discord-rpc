@@ -1,0 +1,17 @@
+{
+  "discord_client_id": "1539636595584401538",
+  "interval": 2,
+  "include_browser": false,
+  "show_buttons": true,
+  "activity": "Ecoute",
+  "app_name": "Deezer",
+  "show_time": true,
+  "small_image": "",
+  "btn1_text": "Écouter sur Deezer",
+  "btn1_url": "https://www.deezer.com/track/3337149971",
+  "btn2_text": "Ouvrir Deezer",
+  "btn2_url": "",
+  "autostart": true,
+  "priority_high": true,
+  "always_on_top": false
+}
