@@ -61,7 +61,7 @@ def current_track(timeout=12, include_browser=False):
             ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
              "-File", _ps_file()],
             capture_output=True, text=True, timeout=timeout,
-            creationflags=flags,
+            creationflags=flags, encoding="utf-8", errors="replace",
         )
         data = json.loads((r.stdout or "").strip() or "[]")
     except Exception:

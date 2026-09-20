@@ -71,7 +71,7 @@ def _reg_exists():
 def _task_exists():
     try:
         flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-        r = subprocess.run(["schtasks", "/query", "/tn", TASK_NAME], capture_output=True, text=True, creationflags=flags)
+        r = subprocess.run(["schtasks", "/query", "/tn", TASK_NAME], capture_output=True, text=True, creationflags=flags, encoding="utf-8", errors="replace")
         return r.returncode == 0
     except Exception:
         return False
@@ -81,11 +81,11 @@ def _task_set(enable=True):
         flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
         if enable:
             # supprime ancienne si existe
-            subprocess.run(["schtasks", "/delete", "/tn", TASK_NAME, "/f"], capture_output=True, creationflags=flags)
-            r = subprocess.run(_task_cmd(), capture_output=True, text=True, creationflags=flags)
+            subprocess.run(["schtasks", "/delete", "/tn", TASK_NAME, "/f"], capture_output=True, creationflags=flags, encoding="utf-8", errors="replace")
+            r = subprocess.run(_task_cmd(), capture_output=True, text=True, creationflags=flags, encoding="utf-8", errors="replace")
             return r.returncode == 0
         else:
-            r = subprocess.run(["schtasks", "/delete", "/tn", TASK_NAME, "/f"], capture_output=True, creationflags=flags)
+            r = subprocess.run(["schtasks", "/delete", "/tn", TASK_NAME, "/f"], capture_output=True, creationflags=flags, encoding="utf-8", errors="replace")
             return True
     except Exception:
         return False
