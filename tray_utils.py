@@ -121,13 +121,21 @@ class TrayManager:
             is_live = getattr(self.app, "auto_on", False) and getattr(self.app, "connected", False)
             track = getattr(self.app, "current_track", None)
             track_label = f"▶ {track['artist']} — {track['title']}"[:32] if track else "Aucune lecture"
+            # priorité Discord : check v_discord_prio si dispo, sinon v_prio
+            prio_on = False
+            if hasattr(self.app, "v_discord_prio") and self.app.v_discord_prio:
+                try: prio_on = bool(self.app.v_discord_prio.get())
+                except: prio_on = False
+            elif hasattr(self.app, "v_prio") and self.app.v_prio:
+                try: prio_on = bool(self.app.v_prio.get())
+                except: prio_on = False
 
             return pystray.Menu(
                 item(f"DeezerRP PRO  •  {track_label}", None, enabled=False),
                 pystray.Menu.SEPARATOR,
                 item("▶ Afficher DeezerRP", self.on_show, default=True),
                 item("⏸ Mettre en pause" if is_live else "▶ Reprendre", self.on_toggle),
-                item("⚡ Priorité Discord : ON" if getattr(self.app, "v_prio", None) and self.app.v_prio.get() else "⚡ Priorité Discord : OFF", self.on_prio),
+                item("⚡ Priorité Discord : ON" if prio_on else "⚡ Priorité Discord : OFF", self.on_prio),
                 pystray.Menu.SEPARATOR,
                 item("↗ Mettre à jour", self.on_update),
                 item("✕ Effacer statut", self.on_clear),
@@ -153,7 +161,11 @@ class TrayManager:
 
     def on_prio(self, icon=None, item=None):
         try:
-            self.app.root.after(0, self.app.toggle_priority)
+            # priorité Discord, pas Windows
+            if hasattr(self.app, "toggle_discord_priority"):
+                self.app.root.after(0, self.app.toggle_discord_priority)
+            elif hasattr(self.app, "toggle_priority"):
+                self.app.root.after(0, self.app.toggle_priority)
             # refresh menu
             self.update_menu()
         except: pass

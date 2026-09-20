@@ -8,10 +8,12 @@
   "show_time": true,
   "small_image": "",
   "btn1_text": "Écouter sur Deezer",
-  "btn1_url": "https://www.deezer.com/track/3337149971",
+  "btn1_url": "",
   "btn2_text": "Ouvrir Deezer",
-  "btn2_url": "",
+  "btn2_url": "https://www.deezer.com",
   "autostart": true,
   "priority_high": true,
-  "always_on_top": false
+  "always_on_top": false,
+  "discord_priority": true,
+  "minimize_to_tray": true
 }

@@ -119,6 +119,7 @@ class App:
         self.current_source = None
         self.current_track = None
         self.img_cache = {}
+        self._fetching_covers = set()
         self.cover_photo = None
         self.coversmall = None
         self.pulse = 0
@@ -210,7 +211,7 @@ class App:
         tb = tk.Frame(logo, bg=BG_MAIN)
         tb.pack(side="left", padx=10)
         tk.Label(tb, text="DeezerRP", bg=BG_MAIN, fg=TEXT, font=("Segoe UI", 13, "bold")).pack(anchor="w")
-        tk.Label(tb, text="PRO  •  v2.6", bg=BG_MAIN, fg=GREEN, font=("Segoe UI", 7, "bold")).pack(anchor="w")
+        tk.Label(tb, text="PRO  •  v2.7", bg=BG_MAIN, fg=GREEN, font=("Segoe UI", 7, "bold")).pack(anchor="w")
         # version pill
         pill = tk.Frame(logo, bg=CARD3, highlightbackground=BORDER2, highlightthickness=1)
         pill.pack(side="right")
@@ -934,6 +935,41 @@ class App:
             return ph
         except: return None
 
+    def _ensure_cover_async(self, url):
+        if not url or not HAS_PIL or url in self.img_cache or url in self._fetching_covers:
+            return
+        self._fetching_covers.add(url)
+        def fetch():
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "DeezerRP/2"})
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    data = resp.read()
+                pil = Image.open(io.BytesIO(data)).convert("RGB")
+                ph = rounded_image(pil, size=140, radius=18)
+                ph_small = rounded_image(pil, size=52, radius=10)
+                self.img_cache[url] = ph
+                self.img_cache[url+"_small"] = ph_small
+                self.root.after(0, lambda: self._update_cover_ui(url))
+            except: pass
+            finally:
+                self._fetching_covers.discard(url)
+        threading.Thread(target=fetch, daemon=True).start()
+
+    def _update_cover_ui(self, url):
+        if url != self.e_large.get().strip():
+            return
+        ph = self.img_cache.get(url)
+        if ph:
+            self.cover_photo = ph
+            try:
+                self.c_cover.delete("all"); self.c_cover.create_image(70,70, image=self.cover_photo)
+                small = self.img_cache.get(url+"_small")
+                if small:
+                    self.coversmall = small
+                    self.btm_cover.delete("all"); self.btm_cover.create_image(26,26, image=self.coversmall)
+                    self.c_preview.delete("all"); self.c_preview.create_image(36,36, image=small)
+            except: pass
+
     def _preview(self):
         act = self.c_type.get() or "Ecoute"
         name = self.e_name.get().strip() or "Deezer"
@@ -970,19 +1006,23 @@ class App:
                     self.btm_source.configure(text=self.current_source)
             url = self.e_large.get().strip()
             if url:
-                ph = self._cover_photo(url)
-                if ph:
+                if url in self.img_cache:
+                    ph = self.img_cache[url]
                     self.cover_photo = ph
-                    self.c_cover.delete("all"); self.c_cover.create_image(70,70, image=self.cover_photo)
-                    # small btm
-                    small = self.img_cache.get(url+"_small")
-                    if small:
-                        self.coversmall = small
-                        self.btm_cover.delete("all"); self.btm_cover.create_image(26,26, image=self.coversmall)
-                        self.c_preview.delete("all"); self.c_preview.create_image(36,36, image=small)
+                    try:
+                        self.c_cover.delete("all"); self.c_cover.create_image(70,70, image=self.cover_photo)
+                        small = self.img_cache.get(url+"_small")
+                        if small:
+                            self.coversmall = small
+                            self.btm_cover.delete("all"); self.btm_cover.create_image(26,26, image=self.coversmall)
+                            self.c_preview.delete("all"); self.c_preview.create_image(36,36, image=small)
+                    except: pass
+                else:
+                    self._ensure_cover_async(url)
             else:
                 if not self.current_track:
-                    self._draw_cover_placeholder_small(self.c_cover,140,140)
+                    try: self._draw_cover_placeholder_small(self.c_cover,140,140)
+                    except: pass
             self._update_btn_preview()
         except Exception as e:
             pass
@@ -1392,6 +1432,15 @@ class App:
         # si minimize_to_tray et pas force_quit → passe en arrière-plan
         if not self._force_quit and self.cfg.get("minimize_to_tray", True):
             self._persist()
+            has_tray = HAS_TRAY and self.tray_manager and self.tray_manager.running
+            # si pas de tray (pystray manquant), on minimise dans la barre des tâches au lieu de cacher
+            if not has_tray:
+                try:
+                    self.root.iconify()
+                    self._show_toast("DeezerRP — arrière-plan", "♪ Minimisé — Discord prioritaire actif\n(Restaure depuis la barre des tâches)")
+                    self.say("minimisé (pas de tray) — Discord prioritaire", "ok")
+                    return
+                except: pass
             try:
                 self.root.withdraw()
             except: pass
