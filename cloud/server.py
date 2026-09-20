@@ -18,10 +18,23 @@ CONFIG = Path(__file__).parent / "config.json"
 LASTFM_API = "http://ws.audioscrobbler.com/2.0/"
 
 def load_cfg():
+    import os
+    # Render met les secrets dans l'ENV, pas dans le fichier
+    env_overrides = {
+        "discord_bot_token": os.getenv("discord_bot_token") or os.getenv("DISCORD_BOT_TOKEN"),
+        "lastfm_api_key": os.getenv("lastfm_api_key") or os.getenv("LASTFM_API_KEY"),
+        "lastfm_username": os.getenv("lastfm_username") or os.getenv("LASTFM_USERNAME"),
+        "deezer_user_id": os.getenv("deezer_user_id"),
+    }
+    # nettoie les None
+    env_overrides = {k: v for k, v in env_overrides.items() if v}
     try:
-        return json.loads(CONFIG.read_text(encoding="utf-8"))
+        data = json.loads(CONFIG.read_text(encoding="utf-8"))
+        # ENV prioritaire sur fichier
+        data.update(env_overrides)
+        return data
     except:
-        return {
+        base = {
             "discord_bot_token": "",
             "lastfm_api_key": "",
             "lastfm_username": "",
@@ -30,6 +43,8 @@ def load_cfg():
             "discord_priority": True,
             "mode": "bot"  # bot | selfbot
         }
+        base.update(env_overrides)
+        return base
 
 def lastfm_now_playing(api_key, username):
     """Retourne (artist, title, album) si en écoute, sinon None. Détecte nowplaying=true."""
@@ -196,7 +211,11 @@ def main():
         print("❌ Mets ton token dans cloud/config.json -> discord_bot_token")
         print("   Crée un bot sur https://discord.com/developers/applications -> Bot -> Token")
         print("   Invite-le : OAuth2 -> bot -> scopes bot + applications.commands")
-        return
+        print("   (Sur Render : Environment → discord_bot_token)")
+        print("   En attente du token... (le service reste allumé, mets le token et sauve)")
+        import time
+        while True:
+            time.sleep(60)
     if not cfg.get("lastfm_api_key") or not cfg.get("lastfm_username"):
         print("⚠️  Configure Last.fm pour que ça marche PC éteint :")
         print("   1) Deezer -> Paramètres -> Connecte Last.fm (scrobble)")
