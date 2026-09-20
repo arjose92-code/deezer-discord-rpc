@@ -1,0 +1,9 @@
+{
+  "discord_bot_token": "MTAx... Ton token bot Discord",
+  "lastfm_api_key": "abc123... Ton API key Last.fm",
+  "lastfm_username": "ton_pseudo_lastfm",
+  "deezer_user_id": "",
+  "interval": 5,
+  "discord_priority": true,
+  "mode": "bot"
+}

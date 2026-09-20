@@ -8,9 +8,11 @@ dist/
 build/
 *.egg
 
-# Config perso (ne pas commit ton Client ID)
+# Config perso (ne pas commit ton Client ID / tokens)
 # config.json est gardé en exemple, ta config locale sera ignorée si tu veux
 # config.json
+cloud/config.json
+cloud/.env
 
 # Env
 venv/

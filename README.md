@@ -55,7 +55,7 @@ pythonw main.py --minimized  # arrière-plan direct
 ## 🎨 Fonctionnalités PRO
 
 ### Interface vraie app
-- **Sidebar** Spotify : logo `♪ DeezerRP PRO • v2.6 LIVE`, nav 3 pages, status `● LIVE`, switches `Auto-start PC` / `Priorité haute`
+- **Sidebar** Spotify : logo `♪ DeezerRP PRO • v2.7 LIVE`, nav 3 pages, status `● LIVE`, switches `Auto-start PC` / `Priorité haute`
 - **Hero** 140px : pochette arrondie `18px`, `EN LECTURE • ⚡ PRIORITÉ HAUTE • ● EN ÉCOUTE`, progress shimmer
 - **Bottom player** 68px : cover 52px + titre/artiste + `⏮ ⏸ ⏭` + progress + `↗ Mettre à jour`
 - **Thème** : `BG #0a0a0e`, `CARD #14151c`, `ACCENT #5865f2`, `GREEN #1DB954`, `ENTRY #1c1e29`
@@ -76,6 +76,18 @@ pythonw main.py --minimized  # arrière-plan direct
 - **Windows** : `psutil.HIGH_PRIORITY_CLASS` + `ctypes SetPriorityClass(HIGH)` + `SetThreadExecutionState` + keepalive 15s → reste actif en `Game Mode` plein écran
 - **Discord** : `discord_priority=True` → keepalive `5s` (vs `12s`) + reconnexion auto si `pipe closed` + `force=True` pour repasser devant `Joue à <Jeu>` → ton `Écoute Deezer` reste prioritaire
 - Astuce : Discord → `Paramètres → Confidentialité → décoche "Affiche le jeu en cours"` pour 100% priorité
+
+### ☁️ PC éteint ? Héberge 24/7
+Local `SMTC` s'arrête PC éteint → voir `cloud/` :
+```bash
+# 1) Deezer → Paramètres → Connecte Last.fm + crée API key https://www.last.fm/api/account/create
+# 2) Discord → https://discord.com/developers → Bot → Token
+# 3) cd cloud && cp config.json.example config.json # remplis token + lastfm
+# 4) Héberge :
+docker build -t deezerrp-cloud ./cloud && docker run -d --restart unless-stopped -v ./cloud/config.json:/app/config.json deezerrp-cloud
+# ou Render/Fly.io : Root Directory `cloud`, Start `python server.py`
+```
+`cloud/server.py:1` poll Last.fm `nowplaying` toutes les 5s + pochette Deezer → bot `Écoute Deezer`. Détails `cloud/README.md`.
 
 ---
 
@@ -98,6 +110,8 @@ discord_rp.py    → client pypresence (LISTENING/PLAYING/WATCHING)
 autostart.py     → 4 méthodes auto-start (BAT/VBS/Registre/Tâche)
 priority.py      → HIGH_PRIORITY_CLASS + keepalive
 tray_utils.py    → icône tray 64x64 + notifications (plyer/pystray/tk toast)
+cloud/server.py  → bot 24/7 Last.fm → Discord (PC éteint)
+cloud/Dockerfile → hébergement Render/Fly/Raspberry
 INSTALL.bat      → installe les dépendances
 lancer.bat       → lance en pythonw silencieux
 config.json      → réglages (interval, Client ID, prio, etc.)
